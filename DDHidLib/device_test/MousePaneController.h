@@ -23,6 +23,7 @@
  */
 
 #import <Cocoa/Cocoa.h>
+#import <Foundation/NSJSONSerialization.h>
 
 @class DDHidQueue;
 @class DDHidMouse;

@@ -27,6 +27,7 @@
 #import "ButtonState.h"
 
 
+
 @interface MousePaneController (Private)
 
 - (void) setMouseX: (int) mouseX;
@@ -47,14 +48,46 @@ static int applyDelta(int current, int delta)
     return newValue;
 }
 
+/* Philip: This class is *almost* what we need.
+ 
+   It keeps track of only one mouse at a time,
+   via mCurrentMouse, mMouseButtons, mMouseX, mMouseY, and mMouseWheel.
+   I don't know what the m is for.
+   We want to refactor it to keep track of the dynamic information on every mouse in addition to whatever static data is in a DDHidMouse. This can be done with an array of dictionaries, I think?
+   If the DDHidMouseDelegate interface does not send the mouse reference along with changes, the easiest thing to do is probably to augment those methods with a self-reference in addition to a value.
+   In awakeFromNib, which I think is just the init method and not an onfocus, I can start a web socket, and then I can either send information through it at every delegate receiving method, or better, have a thread which will regularly send the sum of events that have happened through the web socket.
+       I guess that's only really necessary for x and y, since we want to combine those in mousemoves, while down and up can't be combined.
+ Websocket library: SocketRocket
+   To describe events, I will use NSDictionary, turned into JSON with JSONSerialization
+   This should send over websockets and be parsable by javascript.
+ 
+   I need static methods for building event dictionaries by receiving e.g. dx, dy, vendorid, deviceid
+ makeMouseMove dx: dy: vendorId: deviceId:
+ makeMouseDown button: vendorId: deviceId:
+   makeMouseUp button: vendorId: deviceId:
+ 
+   [Alternately, we can create an instance of a smaller per-mouse manager class for each mouse.]
+ 
+ */
+
 - (void) awakeFromNib;
 {
     mCurrentMouse = 0;
     mMouseButtons = [[NSMutableArray alloc] init];
     
+    // Philip: How to create data that could be sent through a websocket
+    NSDictionary* dict = [[NSDictionary alloc] init];
+    NSError *e = nil;
+    id data = [NSJSONSerialization dataWithJSONObject:dict options: NSJSONWritingPrettyPrinted error: &e];
+    
+    //get all mice
     NSArray * mice = [DDHidMouse allMice];
+    //make this class the delegate for all mice
     [mice makeObjectsPerformSelector: @selector(setDelegate:)
                           withObject: self];
+    //make this class receive events from all mice
+    [mice makeObjectsPerformSelector: @selector(startListening)
+                          withObject: nil];
     [self setMice: mice];
     [self setMouseIndex: 0];
 }
@@ -96,6 +129,9 @@ static int applyDelta(int current, int delta)
 
 //=========================================================== 
 // - setMouseIndex:
+//   Philip: Gets called when a different mouse is selected in the GUI.
+//           We either need to cut out all the GUI or refactor it.
+//           Ignore for now.
 //=========================================================== 
 - (void) setMouseIndex: (NSUInteger) theMouseIndex
 {
@@ -176,6 +212,9 @@ static int applyDelta(int current, int delta)
     [self setMouseWheel: applyDelta(mMouseWheel, deltaWheel)];
 }
 
+//===========================================================
+// - buttons
+//===========================================================
 - (void) ddhidMouse: (DDHidMouse *) mouse buttonDown: (unsigned) buttonNumber;
 {
     ButtonState * state = [mMouseButtons objectAtIndex: buttonNumber];

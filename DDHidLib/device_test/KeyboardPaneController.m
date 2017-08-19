@@ -54,7 +54,7 @@
     [self setKeyboards: keyboards];
     
     if ([keyboards count] > 0)
-        [self setKeyboardIndex: 0];
+        ;// [self setKeyboardIndex: 0];
     else
         [self setKeyboardIndex: NSNotFound];
 }

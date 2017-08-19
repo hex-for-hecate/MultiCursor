@@ -120,6 +120,7 @@
 		B366F1B116F5DE9800C0BA49 /* DDHidAppleMikey.m in Sources */ = {isa = PBXBuildFile; fileRef = B366F1AF16F5DE9800C0BA49 /* DDHidAppleMikey.m */; };
 		B366F1B316F5E20800C0BA49 /* DDHidAppleMikey.m in Sources */ = {isa = PBXBuildFile; fileRef = B366F1AF16F5DE9800C0BA49 /* DDHidAppleMikey.m */; };
 		B366F1B616F5E64B00C0BA49 /* AppleMikeyPaneController.m in Sources */ = {isa = PBXBuildFile; fileRef = B366F1B516F5E64B00C0BA49 /* AppleMikeyPaneController.m */; };
+		D4ECCBCD1F48D3AB00EC5353 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4ECCBCC1F48D3AB00EC5353 /* Foundation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -297,6 +298,7 @@
 		B366F1AF16F5DE9800C0BA49 /* DDHidAppleMikey.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = DDHidAppleMikey.m; sourceTree = "<group>"; };
 		B366F1B416F5E64A00C0BA49 /* AppleMikeyPaneController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppleMikeyPaneController.h; sourceTree = "<group>"; };
 		B366F1B516F5E64B00C0BA49 /* AppleMikeyPaneController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppleMikeyPaneController.m; sourceTree = "<group>"; };
+		D4ECCBCC1F48D3AB00EC5353 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -312,6 +314,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D4ECCBCD1F48D3AB00EC5353 /* Foundation.framework in Frameworks */,
 				55D593750BAE3B7500364849 /* DDHidLib.framework in Frameworks */,
 				559CBB940B5B31EA00C8FD74 /* IOKit.framework in Frameworks */,
 				559CBB930B5B31E300C8FD74 /* Cocoa.framework in Frameworks */,
@@ -445,6 +448,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				D4ECCBCC1F48D3AB00EC5353 /* Foundation.framework */,
 				A439B2861F48A217001A5100 /* Cocoa.framework */,
 				A439B2841F48A213001A5100 /* IOKit.framework */,
 				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
