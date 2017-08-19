@@ -70,4 +70,5 @@ server.onmessage = function(e) {
 }
 ```
 
+
 It’s possible that the Worker step is overkill, but parallel execution is cool, so there.
