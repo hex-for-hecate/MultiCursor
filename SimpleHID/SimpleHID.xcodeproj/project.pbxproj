@@ -1,0 +1,415 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 48;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A48349921F488AB200886075 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = A48349911F488AB200886075 /* AppDelegate.m */; };
+		A48349951F488AB200886075 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A48349941F488AB200886075 /* ViewController.m */; };
+		A48349971F488AB200886075 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A48349961F488AB200886075 /* Assets.xcassets */; };
+		A483499A1F488AB200886075 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A48349981F488AB200886075 /* Main.storyboard */; };
+		A483499D1F488AB200886075 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = A483499C1F488AB200886075 /* main.m */; };
+		A48349A61F488AD300886075 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A48349A51F488AD300886075 /* IOKit.framework */; };
+		A4834A021F4890A800886075 /* DDHidLib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A4834A011F488F9D00886075 /* DDHidLib.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A483498D1F488AB200886075 /* SimpleHID.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SimpleHID.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A48349901F488AB200886075 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		A48349911F488AB200886075 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		A48349931F488AB200886075 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		A48349941F488AB200886075 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		A48349961F488AB200886075 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A48349991F488AB200886075 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		A483499B1F488AB200886075 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A483499C1F488AB200886075 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		A483499E1F488AB200886075 /* SimpleHID.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SimpleHID.entitlements; sourceTree = "<group>"; };
+		A48349A51F488AD300886075 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		A48349E51F488F5D00886075 /* DDHidAppleMikey.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidAppleMikey.h; sourceTree = "<group>"; };
+		A48349E61F488F5D00886075 /* DDHidAppleMikey.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidAppleMikey.m; sourceTree = "<group>"; };
+		A48349E71F488F5D00886075 /* DDHidAppleRemote.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidAppleRemote.h; sourceTree = "<group>"; };
+		A48349E81F488F5D00886075 /* DDHidAppleRemote.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidAppleRemote.m; sourceTree = "<group>"; };
+		A48349E91F488F5D00886075 /* DDHidDevice.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidDevice.h; sourceTree = "<group>"; };
+		A48349EA1F488F5D00886075 /* DDHidDevice.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidDevice.m; sourceTree = "<group>"; };
+		A48349EB1F488F5D00886075 /* DDHidElement.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidElement.h; sourceTree = "<group>"; };
+		A48349EC1F488F5D00886075 /* DDHidElement.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidElement.m; sourceTree = "<group>"; };
+		A48349ED1F488F5D00886075 /* DDHidEvent.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidEvent.h; sourceTree = "<group>"; };
+		A48349EE1F488F5D00886075 /* DDHidEvent.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidEvent.m; sourceTree = "<group>"; };
+		A48349EF1F488F5D00886075 /* DDHidJoystick.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidJoystick.h; sourceTree = "<group>"; };
+		A48349F01F488F5D00886075 /* DDHidJoystick.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidJoystick.m; sourceTree = "<group>"; };
+		A48349F11F488F5D00886075 /* DDHidKeyboard.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidKeyboard.h; sourceTree = "<group>"; };
+		A48349F21F488F5D00886075 /* DDHidKeyboard.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidKeyboard.m; sourceTree = "<group>"; };
+		A48349F31F488F5D00886075 /* DDHidKeyboardBarcodeScanner.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidKeyboardBarcodeScanner.h; sourceTree = "<group>"; };
+		A48349F41F488F5D00886075 /* DDHidKeyboardBarcodeScanner.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidKeyboardBarcodeScanner.m; sourceTree = "<group>"; };
+		A48349F51F488F5D00886075 /* DDHidLib.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidLib.h; sourceTree = "<group>"; };
+		A48349F61F488F5D00886075 /* DDHidMouse.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidMouse.h; sourceTree = "<group>"; };
+		A48349F71F488F5D00886075 /* DDHidMouse.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidMouse.m; sourceTree = "<group>"; };
+		A48349F81F488F5D00886075 /* DDHidQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidQueue.h; sourceTree = "<group>"; };
+		A48349F91F488F5D00886075 /* DDHidQueue.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidQueue.m; sourceTree = "<group>"; };
+		A48349FA1F488F5D00886075 /* DDHidStandardUsages.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = DDHidStandardUsages.plist; sourceTree = "<group>"; };
+		A48349FB1F488F5D00886075 /* DDHidUsage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidUsage.h; sourceTree = "<group>"; };
+		A48349FC1F488F5D00886075 /* DDHidUsage.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidUsage.m; sourceTree = "<group>"; };
+		A48349FD1F488F5D00886075 /* DDHidUsageTables.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = DDHidUsageTables.h; sourceTree = "<group>"; };
+		A48349FE1F488F5D00886075 /* DDHidUsageTables.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = DDHidUsageTables.m; sourceTree = "<group>"; };
+		A48349FF1F488F5D00886075 /* NSDictionary+DDHidExtras.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "NSDictionary+DDHidExtras.h"; sourceTree = "<group>"; };
+		A4834A001F488F5D00886075 /* NSDictionary+DDHidExtras.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "NSDictionary+DDHidExtras.m"; sourceTree = "<group>"; };
+		A4834A011F488F9D00886075 /* DDHidLib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = DDHidLib.framework; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		A483498A1F488AB200886075 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A4834A021F4890A800886075 /* DDHidLib.framework in Frameworks */,
+				A48349A61F488AD300886075 /* IOKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A48349841F488AB200886075 = {
+			isa = PBXGroup;
+			children = (
+				A48349E41F488F5D00886075 /* lib */,
+				A483498F1F488AB200886075 /* SimpleHID */,
+				A483498E1F488AB200886075 /* Products */,
+				A48349A41F488AD200886075 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		A483498E1F488AB200886075 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				A483498D1F488AB200886075 /* SimpleHID.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A483498F1F488AB200886075 /* SimpleHID */ = {
+			isa = PBXGroup;
+			children = (
+				A48349901F488AB200886075 /* AppDelegate.h */,
+				A48349911F488AB200886075 /* AppDelegate.m */,
+				A48349931F488AB200886075 /* ViewController.h */,
+				A48349941F488AB200886075 /* ViewController.m */,
+				A48349961F488AB200886075 /* Assets.xcassets */,
+				A48349981F488AB200886075 /* Main.storyboard */,
+				A483499B1F488AB200886075 /* Info.plist */,
+				A483499C1F488AB200886075 /* main.m */,
+				A483499E1F488AB200886075 /* SimpleHID.entitlements */,
+			);
+			path = SimpleHID;
+			sourceTree = "<group>";
+		};
+		A48349A41F488AD200886075 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				A4834A011F488F9D00886075 /* DDHidLib.framework */,
+				A48349A51F488AD300886075 /* IOKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A48349E41F488F5D00886075 /* lib */ = {
+			isa = PBXGroup;
+			children = (
+				A48349E51F488F5D00886075 /* DDHidAppleMikey.h */,
+				A48349E61F488F5D00886075 /* DDHidAppleMikey.m */,
+				A48349E71F488F5D00886075 /* DDHidAppleRemote.h */,
+				A48349E81F488F5D00886075 /* DDHidAppleRemote.m */,
+				A48349E91F488F5D00886075 /* DDHidDevice.h */,
+				A48349EA1F488F5D00886075 /* DDHidDevice.m */,
+				A48349EB1F488F5D00886075 /* DDHidElement.h */,
+				A48349EC1F488F5D00886075 /* DDHidElement.m */,
+				A48349ED1F488F5D00886075 /* DDHidEvent.h */,
+				A48349EE1F488F5D00886075 /* DDHidEvent.m */,
+				A48349EF1F488F5D00886075 /* DDHidJoystick.h */,
+				A48349F01F488F5D00886075 /* DDHidJoystick.m */,
+				A48349F11F488F5D00886075 /* DDHidKeyboard.h */,
+				A48349F21F488F5D00886075 /* DDHidKeyboard.m */,
+				A48349F31F488F5D00886075 /* DDHidKeyboardBarcodeScanner.h */,
+				A48349F41F488F5D00886075 /* DDHidKeyboardBarcodeScanner.m */,
+				A48349F51F488F5D00886075 /* DDHidLib.h */,
+				A48349F61F488F5D00886075 /* DDHidMouse.h */,
+				A48349F71F488F5D00886075 /* DDHidMouse.m */,
+				A48349F81F488F5D00886075 /* DDHidQueue.h */,
+				A48349F91F488F5D00886075 /* DDHidQueue.m */,
+				A48349FA1F488F5D00886075 /* DDHidStandardUsages.plist */,
+				A48349FB1F488F5D00886075 /* DDHidUsage.h */,
+				A48349FC1F488F5D00886075 /* DDHidUsage.m */,
+				A48349FD1F488F5D00886075 /* DDHidUsageTables.h */,
+				A48349FE1F488F5D00886075 /* DDHidUsageTables.m */,
+				A48349FF1F488F5D00886075 /* NSDictionary+DDHidExtras.h */,
+				A4834A001F488F5D00886075 /* NSDictionary+DDHidExtras.m */,
+			);
+			path = lib;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		A483498C1F488AB200886075 /* SimpleHID */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A48349A11F488AB200886075 /* Build configuration list for PBXNativeTarget "SimpleHID" */;
+			buildPhases = (
+				A48349891F488AB200886075 /* Sources */,
+				A483498A1F488AB200886075 /* Frameworks */,
+				A483498B1F488AB200886075 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SimpleHID;
+			productName = SimpleHID;
+			productReference = A483498D1F488AB200886075 /* SimpleHID.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		A48349851F488AB200886075 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0900;
+				ORGANIZATIONNAME = ExSitu;
+				TargetAttributes = {
+					A483498C1F488AB200886075 = {
+						CreatedOnToolsVersion = 9.0;
+					};
+				};
+			};
+			buildConfigurationList = A48349881F488AB200886075 /* Build configuration list for PBXProject "SimpleHID" */;
+			compatibilityVersion = "Xcode 8.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = A48349841F488AB200886075;
+			productRefGroup = A483498E1F488AB200886075 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A483498C1F488AB200886075 /* SimpleHID */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		A483498B1F488AB200886075 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A48349971F488AB200886075 /* Assets.xcassets in Resources */,
+				A483499A1F488AB200886075 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		A48349891F488AB200886075 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A48349951F488AB200886075 /* ViewController.m in Sources */,
+				A483499D1F488AB200886075 /* main.m in Sources */,
+				A48349921F488AB200886075 /* AppDelegate.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		A48349981F488AB200886075 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				A48349991F488AB200886075 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		A483499F1F488AB200886075 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		A48349A01F488AB200886075 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "Mac Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		A48349A21F488AB200886075 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SimpleHID/SimpleHID.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = NJZSW7J9AZ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = SimpleHID/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/DDHidLib.framework/Versions/A",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = exsitu.lri.fr.SimpleHID;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		A48349A31F488AB200886075 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = SimpleHID/SimpleHID.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = NJZSW7J9AZ;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
+				INFOPLIST_FILE = SimpleHID/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/DDHidLib.framework/Versions/A",
+				);
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_BUNDLE_IDENTIFIER = exsitu.lri.fr.SimpleHID;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A48349881F488AB200886075 /* Build configuration list for PBXProject "SimpleHID" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A483499F1F488AB200886075 /* Debug */,
+				A48349A01F488AB200886075 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A48349A11F488AB200886075 /* Build configuration list for PBXNativeTarget "SimpleHID" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A48349A21F488AB200886075 /* Debug */,
+				A48349A31F488AB200886075 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A48349851F488AB200886075 /* Project object */;
+}
