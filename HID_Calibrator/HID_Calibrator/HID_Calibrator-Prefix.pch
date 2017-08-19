@@ -1,0 +1,15 @@
+//
+// Prefix header for all source files of the 'HID_Calibrator' target in the 'HID_Calibrator' project
+//
+
+#ifdef __OBJC__
+	#import <Cocoa/Cocoa.h>
+#endif
+
+#if DEBUG_ASSERT_PRODUCTION_CODE
+#define NSLogDebug(format, ...)
+#else
+#define NSLogDebug(format, ...) \
+NSLog(@"<%s:%d> %s, " format, \
+strrchr("/" __FILE__, '/') + 1, __LINE__, __PRETTY_FUNCTION__, ## __VA_ARGS__)
+#endif // if DEBUG_ASSERT_PRODUCTION_CODE
