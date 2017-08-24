@@ -39,6 +39,10 @@
 @implementation MousePaneController
 
 static int sMaxValue = 2500;
+static float moveFrequency = 0.002;
+NSMutableDictionary* mousemoves;
+NSString* eventReceiver;
+// store a socket as a private variable as well
 
 static int applyDelta(int current, int delta)
 {
@@ -68,17 +72,42 @@ static int applyDelta(int current, int delta)
  
    [Alternately, we can create an instance of a smaller per-mouse manager class for each mouse.]
  
+   Do I need a data structure to keep track of the state of all mice? If i'm grouping the events, yes. If not, no,
+   as I could just check the vendor and product ids in the callback and run the appropriate event-generation method.
+   So what's the structure if I'm grouping events?
+ 
+   For each mouse, have a data structure that sums their x and y movements, so a dictionary where the key is vendorId ++ productId, and the value is a 2-tuple.
+   That data structure, mousemoves, is formed on startup, and is continuously modified through methods
+
+ 
+ globals:
+eventReceiver: NSString
+ moveFrequency: float
+ mousemoves: NSDictionary
+ 
+ and I still need to figure out how to add SRSockets.
+ How about I write all the methods including the socket ones, and then add the library.
+ I think a constructor would be useful.
+ 
  */
+
++ (NSString *) mouseIdFromVendorId: (long) v_id productId: (long) p_id;
+{
+    return [NSString stringWithFormat: @"%lu-%lu", v_id, p_id];
+}
 
 - (void) awakeFromNib;
 {
     mCurrentMouse = 0;
     mMouseButtons = [[NSMutableArray alloc] init];
+    mousemoves = [[NSMutableDictionary alloc] init];
+    //start a websocket with eventReceiver
+    [self openSocketToAddress: eventReceiver];
     
-    // Philip: How to create data that could be sent through a websocket
-    NSDictionary* dict = [[NSDictionary alloc] init];
-    NSError *e = nil;
-    id data = [NSJSONSerialization dataWithJSONObject:dict options: NSJSONWritingPrettyPrinted error: &e];
+    // Philip: How to create data that can be sent through a websocket
+    //NSDictionary* dict = [[NSDictionary alloc] init];
+    //NSError *e = nil;
+    //id data = [NSJSONSerialization dataWithJSONObject:dict options: NSJSONWritingPrettyPrinted error: &e];
     
     //get all mice
     NSArray * mice = [DDHidMouse allMice];
@@ -90,6 +119,126 @@ static int applyDelta(int current, int delta)
                           withObject: nil];
     [self setMice: mice];
     [self setMouseIndex: 0];
+    
+    // fill up mousemoves
+    for (DDHidMouse* mouse in mice) {
+        NSString* Id = [MousePaneController mouseIdFromVendorId: mouse.vendorId productId: mouse.productId];
+        NSMutableArray* newArray = [[NSMutableArray alloc] initWithCapacity: 2];
+        [newArray replaceObjectAtIndex: 0 withObject: @(0)];
+        [newArray replaceObjectAtIndex: 1 withObject: @(0)];
+        [mousemoves setObject: newArray forKey: Id];
+    }
+}
+
+//done
+- (void) addXDelta: (int) dx toMouseWithVendorId: (long) v_id andProductId: (long) p_id
+{
+    //mousemoves[v_id + p_id][0] += dx
+    NSNumber* oldvalue;
+    oldvalue = [[mousemoves objectForKey: [MousePaneController mouseIdFromVendorId:v_id productId:p_id]] objectAtIndex: 0];
+    [[mousemoves objectForKey: [MousePaneController mouseIdFromVendorId:v_id productId:p_id]] replaceObjectAtIndex: 0  withObject: @([oldvalue integerValue] + 1)];
+}
+
+//done
+- (void) addYDelta: (int) dy toMouseWithVendorId: (long) v_id andProductId: (long) p_id
+{
+    //mousemoves[v_id + p_id][1] += dy
+    NSNumber* oldvalue;
+    oldvalue = [[mousemoves objectForKey: [MousePaneController mouseIdFromVendorId:v_id productId:p_id]] objectAtIndex: 1];
+    [[mousemoves objectForKey: [MousePaneController mouseIdFromVendorId:v_id productId:p_id]] replaceObjectAtIndex: 1  withObject: @([oldvalue integerValue] + 1)];
+}
+
+//done
+- (void) clearMouseMoves
+{
+    //iterate through mousemoves and reset all moves to (0,0)
+    for(id key in mousemoves)
+    {
+        [[mousemoves objectForKey: key] replaceObjectAtIndex: 0 withObject: [NSNumber numberWithInt: 0]]; //mousemoves[key][0] = 0; jesus christ this syntax
+        [[mousemoves objectForKey: key] replaceObjectAtIndex: 1 withObject: [NSNumber numberWithInt: 0]]; //mousemoves[key][1] = 0;
+    }
+}
+
+//done
+- (void) loopInSeconds: (float) delay
+{
+    [self performSelector: @selector(sendMouseMove) withObject: nil afterDelay: delay];
+}
+
+//done
+- (void) sendMouseMove
+{
+    CFAbsoluteTime start = CFAbsoluteTimeGetCurrent();
+    // iterate through all mice and get their x and y's, sending them to makeMouseMove and sending the resulting event through the websocket
+    int x;
+    int y;
+    for(id key in mousemoves)
+    {
+        x = [[[mousemoves objectForKey:key] objectAtIndex: 0] integerValue];
+        y = [[[mousemoves objectForKey:key] objectAtIndex: 1] integerValue];
+        [self sendEventData: [MousePaneController makeMouseMoveX: x Y: y withId: key]];
+    }
+    
+    // clear the data structure holding mousemovements
+    [self clearMouseMoves];
+    CFAbsoluteTime end = CFAbsoluteTimeGetCurrent();
+    CFTimeInterval elapsed = start - end;
+    [self loopInSeconds: MAX(moveFrequency - elapsed, 0)]; // continue loop
+}
+
+// TODO
+- (void) openSocketToAddress: (NSString *) url
+{
+}
+
+// TODO
+- (void) sendEventData: (NSData *) data
+{
+}
+
+// TODO
+- (void) closeSocket
+{
+}
+
++ (NSData *) makeMouseMoveX: (int) dx Y:(int) dy withId: (NSString *) Id
+{
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    
+    [dict setObject: @"mousemove" forKey: @"type"];
+    [dict setObject: [NSString stringWithFormat:@"%d",dx] forKey: @"dx"];
+    [dict setObject: [NSString stringWithFormat:@"%d",dy] forKey: @"dy"];
+    [dict setObject: Id forKey: @"id"];
+    
+    NSError *e = nil;
+    id data = [NSJSONSerialization dataWithJSONObject:dict options: NSJSONWritingPrettyPrinted error: &e];
+    return data;
+}
+
++ (NSData *) makeMouseDownButton: (int) button withId: (NSString *) Id
+{
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    
+    [dict setObject: @"mousedown" forKey: @"type"];
+    [dict setObject: [NSString stringWithFormat:@"%d",button] forKey: @"button"];
+    [dict setObject: Id forKey: @"id"];
+    
+    NSError *e = nil;
+    id data = [NSJSONSerialization dataWithJSONObject:dict options: NSJSONWritingPrettyPrinted error: &e];
+    return data;
+}
+
++ (NSData *) makeMouseUpButton: (int) button withId: (NSString *) Id
+{
+    NSMutableDictionary* dict = [[NSMutableDictionary alloc] init];
+    
+    [dict setObject: @"mouseup" forKey: @"type"];
+    [dict setObject: [NSString stringWithFormat:@"%d",button] forKey: @"button"];
+    [dict setObject: Id forKey: @"id"];
+    
+    NSError *e = nil;
+    id data = [NSJSONSerialization dataWithJSONObject:dict options: NSJSONWritingPrettyPrinted error: &e];
+    return data;
 }
 
 //=========================================================== 
@@ -219,6 +368,8 @@ static int applyDelta(int current, int delta)
 {
     ButtonState * state = [mMouseButtons objectAtIndex: buttonNumber];
     [state setPressed: YES];
+    
+    [MousePaneController makeMouseDownButton: buttonNumber vendorId: mouse.vendorId productId: mouse.productId];
 }
 
 - (void) ddhidMouse: (DDHidMouse *) mouse buttonUp: (unsigned) buttonNumber;
