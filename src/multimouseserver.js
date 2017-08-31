@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 // Registers all plugged-in mice and sends their events through the configured web socket (TODO)
 
 /*
@@ -13,48 +14,84 @@ Mouse data looks like this:
   ]
 }
 
-I'll need to do something where I look at changes to log events I guess?
-Like, mouseup is when the 0 is smaller than it was before,
-mousedown is when the 0 is bigger than before,
-mousemove is when either of 1 and 2 change to something that's not 0
+
+where am I going to sum to position? 
+On the client side, a Mouse object will keep a position. 
+Since the client will have a local event emitter anyway, there's no good argument for me laying special semantics on mice here.
+
 */
 
 const HID = require('../node_modules/node-hid');
-const util = require('util');
-const events = require('events');
+const server = require('websocket').server, http = require('http');
+
+let connection;
+
+let socket = new server({
+    httpServer: http.createServer().listen(7777)
+});
+
+socket.on("request", function(req) {
+    connection = req.accept(null, req.origin);
+    console.log("Socket connection opened");
+
+    connection.on("message", function(msg) {
+        //do we want any interaction?
+        //Maybe for setting up mice interactively, i.e. asking the client to
+        //click and move a mouse to give the client the corresponding vid and
+        //pid.
+    });
+
+    connection.on("close", function(connection) {
+        console.log("Socket connection closed");
+    });
+});
 
 const getAllDevices = function() {
     return HID.devices();
-}
+};
 
+// TODO update when devices get plugged in/out?
 let allDevices = getAllDevices();
-
-//util.inherits(PowerMate, events.EventEmitter);
 
 class Mouse {
     constructor(vid, pid) {
-        this.vid = vid;
-        this.pid = pid;
+        this.deviceId =  `${vid}-${pid}`;
         let device = new HID.HID(vid, pid);
-        device.on("data", this.interpretMouseData);
+        device.on("data", this.interpretMouseData.bind(this));
     }
 
     interpretMouseData(data) {
         var button = data[0];
         if (button > this.button) {
-            //this.emit mousedown
+            this.emitEvent("mousedown", { button: button });
         } else if (button < this.button) {
-            //this.emit mouseup
+            this.emitEvent("mouseup", { button: button });
         }
         this.button = button;
-        var delta = [data[1], data[2]].map(x => x === 255 ? -1 : x);
-        if (delta[0] !== 0 || delta[1] !== 0) {
-            //this.emit mousemove
+
+        // TODO fix delta function 
+        let movedelta = [data[1], data[2]].map(x => x === 255 ? -1 : x);
+        if (movedelta[0] !== 0 || movedelta[1] !== 0) {
+            this.emitEvent("mousemove", { delta: movedelta }); 
         }
     }
 
     emitEvent(type, data) {
+        if (!connection) {
+            console.log(`Sending ${type} event`);
+            return;
+        }
+
+        let event = { 
+            type: type,
+            data: data,
+            deviceId: this.deviceId
+        };
+
+        connection.sendUTF(JSON.stringify(event));
     }
 }
+
+// start sending events for a particular mouse
 let mouse = new Mouse(1133, 49232);
 
