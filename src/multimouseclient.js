@@ -12,6 +12,11 @@
  * */
 
 /* This is the block you would put in your client side code to interface with the MultiCursor server */
+/* To actually pick up fired events, it looks like they have to be CustomEvents.
+ * Handlers with manually specified type will still pick them up,
+ * but I can only add my own detail field if I do it like that.
+ *
+ */
 class MultiCursorEventEmitter {
     constructor(url, registerDevices, handleMouseEvents) {
         //the port on which the server is communicating.
@@ -48,35 +53,48 @@ class Mouse {
         this.left_click = false;
         this.right_click = false;
 
+        // TODO create an inspectable object representing the mouse's state, whatever that means contextually.
+        this.cursor = document.createElement("div");
+        this.cursor.classList.add("cursor");
+        document.body.appendChild(this.cursor);
+        this.cursor.style.left = "0px";
+        this.cursor.style.top = "0px";
+
         // make this mouse track the events of a particular device.
         document.addEventListener("mousemove", (e) => {
-            if (e.deviceId === this.deviceId) {
-                this.position = e.detail.delta.forEach((v, i) => this.position[i] + v);
+            if (e.detail.deviceId === this.deviceId) {
+                let delta = e.detail.delta;
+                this.position = [this.position[0] + delta[0], this.position[1] + delta[1]];
+                this.cursor.style.left = `${this.position[0]}px`;
+                this.cursor.style.top = `${this.position[1]}px`;
                 console.log(`${this.deviceId} moved!`);
             }
         });
         document.addEventListener("mousedown", (e) => {
-            if (e.deviceId === this.deviceId) {
-                if (e.buttons % 2 === 1) {
+            if (e.detail.deviceId === this.deviceId) {
+                if (e.detail.buttons % 2 === 1) {
                     this.left_click = true;
                 }
-                if (e.buttons >= 2) {
+                if (e.detail.buttons >= 2) {
                     this.right_click = true;
                 }
+                this.cursor.classList.add("clicked");
+                console.log(`${this.deviceId} was clicked!`);
             }
         });
         document.addEventListener("mouseup", (e) => {
-            if (e.deviceId === this.deviceId) {
-                if (e.buttons % 2 === 0) {
+            if (e.detail.deviceId === this.deviceId) {
+                if (e.detail.buttons % 2 === 0) {
                     this.left_click = false;
                 }
-                if (e.buttons < 2) {
+                if (e.detail.buttons < 2) {
                     this.right_click = false;
                 }
+                this.cursor.classList.remove("clicked");
+                console.log(`${this.deviceId} was unclicked!`);
             }
         });
 
-        // TODO create an inspectable object representing the mouse's state, whatever that means contextually.
     }
 }
 
@@ -87,20 +105,25 @@ const makeMice = (deviceList) => {
     }
 };
 
-const generateMouseEvents = (data) => {
-    console.log(data);
-    let event = new MouseEvent(data.type, { 
+const generateMouseEvents = (msg) => {
+    let data = msg.data;
+
+    /* The read-only detail field is sadly the only way to attach arbitrary data to an event, it seems */
+    let detail = { deviceId: msg.deviceId };
+    if (msg.type === "mousedown" || msg.type === "mouseup") {
+        detail.buttons = data.buttons;
+        detail.button = data.button;
+    } else if (msg.type === "mousemove") {
+        detail.delta = data.delta;
+    }
+
+    let event = new CustomEvent(msg.type, { 
         view: window,
         bubbles: true,
         cancelable: true,
-        detail: { deviceId: data.deviceId }
+        detail: detail
     });
-    if (data.type === "mousedown" || data.type === "mouseup") {
-        event.detail.delta = data.delta;
-    } else if (data.type === "mousemove") {
-        event.buttons = data.buttons;
-        event.button = data.button;
-    }
+
     document.dispatchEvent(event);
 };
 
