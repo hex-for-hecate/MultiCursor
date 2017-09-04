@@ -1,4 +1,4 @@
-# MultiCursorOSX
+# MultiCursor
 A node server that sends input events with device identifiers to web apps. For supporting multiple cursors in web apps.
 
 ## Usage
