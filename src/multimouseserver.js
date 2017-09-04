@@ -1,5 +1,12 @@
 /*jshint esversion: 6 */
+
 // Registers all plugged-in mice and sends their events through the configured web socket (TODO)
+// FIXME: make the mouse filter grab the apple trackpad.
+
+// FIXME: The same device may appear in duplicate, and 
+// I could feasibly have multiple of the same model device be plugged in at once.
+// I can't distinguish between these two cases!
+// This support a dialogical system where the client can create sample input events to generate a mouse...
 
 /*
 Mouse data looks like this:
@@ -24,6 +31,19 @@ Since the client will have a local event emitter anyway, there's no good argumen
 const HID = require('../node_modules/node-hid');
 const server = require('websocket').server, http = require('http');
 
+const getAllDevices = function() {
+    return HID.devices();
+};
+
+// TODO update when devices get plugged in/out?
+let allDevices = getAllDevices();
+let devices = HID.devices();
+
+// Look for everything that looks like a mouse:
+let mice = Array.from(new Set(allDevices
+    .filter((d) => d.usagePage === 1 && d.usage === 2)
+    .map((d) => `${d.vendorId}-${d.productId}`)));
+
 let connection;
 
 let socket = new server({
@@ -34,11 +54,16 @@ socket.on("request", function(req) {
     connection = req.accept(null, req.origin);
     console.log("Socket connection opened");
 
+    // send all registered mice to the client
+    connection.sendUTF(JSON.stringify({ type: "devicelist", devicelist: mice }));
+
     connection.on("message", function(msg) {
         //do we want any interaction?
         //Maybe for setting up mice interactively, i.e. asking the client to
         //click and move a mouse to give the client the corresponding vid and
         //pid.
+        //Right now, I'm going with "all interaction can take place on the client side,
+        //the server simply allows the client to start an abstract mouse for every mouse on startup.
     });
 
     connection.on("close", function(connection) {
@@ -46,31 +71,60 @@ socket.on("request", function(req) {
     });
 });
 
-const getAllDevices = function() {
-    return HID.devices();
+/* This table is used to create the 'button' field of browser mouse up and down events, 
+ * and to ensure that multiple events happen when there is an instantaneous transition from both buttons pressed to none pressed.
+ * Lookups are done with the previous and current value of the buttons field in the mouse HID data, 
+ * which is the sum of the values of all currently pressed buttons. 
+ *
+ * There's a good question of what sorts of guarantees I can present: Will a mouseup always be preceded by a corresponding mousedown?
+ * What kind of variants should event-handling code be robust to? In my particular case, 
+ * I need to be able to accurately reflect the state of the mouse at all times.
+ * For that purpose, the buttons sum is enough, since I can discern the state of the mouse from that without even tracking event type.
+ *
+ * */
+const MouseButtonTransitionTable = {
+    "0": {
+        "1": [{type: "mousedown", button: 0}],
+        "2": [{type: "mousedown", button: 2}],
+        "3": [{type: "mousedown", button: 0}, {type: "mousedown", button: 2}]
+    },
+    "1": {
+        "0": [{type: "mouseup", button: 0}],
+        "2": [{type: "mouseup", button: 0}, {type: "mousedown", button: 2}],
+        "3": [{type: "mousedown", button: 2}]
+    },
+    "2": {
+        "0": [{type: "mouseup", button: 2}],
+        "1": [{type: "mouseup", button: 2}, {type: "mousedown", button: 0}],
+        "3": [{type: "mousedown", button: 0}]
+    },
+    "3": {
+        "0": [{type: "mouseup", button: 0}, {type: "mouseup", button: 2}],
+        "1": [{type: "mouseup", button: 2}],
+        "2": [{type: "mouseup", button: 0}]
+    }
 };
-
-// TODO update when devices get plugged in/out?
-let allDevices = getAllDevices();
 
 class Mouse {
     constructor(vid, pid) {
         this.deviceId =  `${vid}-${pid}`;
         let device = new HID.HID(vid, pid);
         device.on("data", this.interpretMouseData.bind(this));
+        this.previousButtons = 0;
     }
 
     interpretMouseData(data) {
-        var button = data[0];
-        if (button > this.button) {
-            this.emitEvent("mousedown", { button: button });
-        } else if (button < this.button) {
-            this.emitEvent("mouseup", { button: button });
-        }
-        this.button = button;
+        let buttons = data[0];
 
-        // TODO fix delta function 
-        let movedelta = [data[1], data[2]].map(x => x === 255 ? -1 : x);
+        if (buttons !== this.previousButtons) {
+            MouseButtonTransitionTable[`${this.previousButtons}`][`${buttons}`].map(
+                (result) => { this.emitEvent(result.type, {buttons: buttons, button: result.button}); }
+            );
+        }
+
+        this.previousButtons = buttons;
+
+        let movedelta = [data[1], data[2]].map(x => x > 128 ? x - 256 : x);
         if (movedelta[0] !== 0 || movedelta[1] !== 0) {
             this.emitEvent("mousemove", { delta: movedelta }); 
         }
@@ -78,7 +132,6 @@ class Mouse {
 
     emitEvent(type, data) {
         if (!connection) {
-            console.log(`Sending ${type} event`);
             return;
         }
 
@@ -89,9 +142,14 @@ class Mouse {
         };
 
         connection.sendUTF(JSON.stringify(event));
+        console.log(JSON.stringify(event));
     }
 }
 
-// start sending events for a particular mouse
-let mouse = new Mouse(1133, 49232);
+// Start sending events for all mice
+for (let mouse of mice) {
+    let [vid, pid] = mouse.split("-");
+    console.log(vid, pid);
+    new Mouse(vid, pid);
+}
 
