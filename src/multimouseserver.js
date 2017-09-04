@@ -1,12 +1,23 @@
 /*jshint esversion: 6 */
 
-// Registers all plugged-in mice and sends their events through the configured web socket (TODO)
+// Registers all plugged-in mice and sends their events through the configured web socket 
 // FIXME: make the mouse filter grab the apple trackpad.
+//        and investigate why it is inconsistent about grabbing other devices.
 
 // FIXME: The same device may appear in duplicate, and 
 // I could feasibly have multiple of the same model device be plugged in at once.
 // I can't distinguish between these two cases!
-// This support a dialogical system where the client can create sample input events to generate a mouse...
+// A dialog system wouldn't fix this, because I don't think I have any way of actually determining whether two devices with the same vid and pid are different, unless there's a mount point field or something :-/
+// There *may* be a serial number that will identify devices uniquely?
+
+// Possible TODO: a dialogical system where the client creates sample input events to grab a specific mouse. 
+// This could be helpful in several respects: 
+//   I wouldn't have to rely on the inconsistent filtering code, 
+//   I could theoretically make virtual mice that aren't strictly bound to single mice
+//   
+//
+
+// FIXME: Allow mice to be used regularly while the server is in effect
 
 /*
 Mouse data looks like this:
