@@ -5,7 +5,7 @@ This is a not-very-stable work in progress.
 The library the project relies on (node-hid) is not very well-documented, and I am currently unsure whether it supports listening to input devices without 'taking them over'.
 
 ## Usage
-Start the server with "node src/multimouseserver.js".
+Start the server with "node src/server.js".
 
 Start the client by opening src/test.html
 

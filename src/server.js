@@ -9,6 +9,8 @@
 // I can't distinguish between these two cases!
 // A dialog system wouldn't fix this, because I don't think I have any way of actually determining whether two devices with the same vid and pid are different, unless there's a mount point field or something :-/
 // There *may* be a serial number that will identify devices uniquely?
+// Apparently one can also get devices by path, i.e. with 'device = new HID.HID(path)'
+// Then I need to use a hash of the path as the id on the client end, rather than the vid + pid.
 
 // Possible TODO: a dialogical system where the client creates sample input events to grab a specific mouse. 
 // This could be helpful in several respects: 
@@ -20,6 +22,7 @@
 // FIXME: Allow mice to be used regularly while the server is in effect
 //        Turns out the undocumented device.setNonBlocking(1) is not the solution.
 //        It just causes the data callback to be called continuously, while still locking down devices.
+//        It's possible I just need to decide to sample devices with some frequency via device.read().
 
 /*
 Mouse data looks like this:
