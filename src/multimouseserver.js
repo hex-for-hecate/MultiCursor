@@ -18,6 +18,8 @@
 //
 
 // FIXME: Allow mice to be used regularly while the server is in effect
+//        Turns out the undocumented device.setNonBlocking(1) is not the solution.
+//        It just causes the data callback to be called continuously, while still locking down devices.
 
 /*
 Mouse data looks like this:
@@ -126,6 +128,7 @@ class Mouse {
 
     interpretMouseData(data) {
         let buttons = data[0];
+        if (buttons === undefined) return;
 
         if (buttons !== this.previousButtons) {
             MouseButtonTransitionTable[`${this.previousButtons}`][`${buttons}`].map(
