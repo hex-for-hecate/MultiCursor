@@ -20,9 +20,11 @@
 //
 
 // FIXME: Allow mice to be used regularly while the server is in effect
-//        Turns out the undocumented device.setNonBlocking(1) is not the solution.
-//        It just causes the data callback to be called continuously, while still locking down devices.
-//        It's possible I just need to decide to sample devices with some frequency via device.read().
+//        It's unclear whether or not this is a bug.
+//        I've played around with using the API in different ways.
+//        This has the exact same result as using device.on(), i.e. it keeps holding on to the device.
+//        If I open and close rather than resume and pause, the processing function is called, but data is always undefined -_-
+//        TODO: Workaround it by prompting for a click by the 'developer' mouse on startup and closing that device.
 
 /*
 Mouse data looks like this:
@@ -37,11 +39,6 @@ Mouse data looks like this:
   ]
 }
 
-
-where am I going to sum to position? 
-On the client side, a Mouse object will keep a position. 
-Since the client will have a local event emitter anyway, there's no good argument for me laying special semantics on mice here.
-
 */
 
 const HID = require('../node_modules/node-hid');
@@ -53,7 +50,6 @@ const getAllDevices = function() {
 
 // TODO update when devices get plugged in/out?
 let allDevices = getAllDevices();
-let devices = HID.devices();
 
 // Look for everything that looks like a mouse:
 let mice = Array.from(new Set(allDevices
@@ -121,33 +117,69 @@ const MouseButtonTransitionTable = {
     }
 };
 
+class Metronome {
+    constructor(callback, freq) {
+        this.callback = callback;
+        this.frequency = freq;
+    }
+
+    setCallback(callback) {
+        this.callback = callback;
+    }
+
+    setFrequency(freq) {
+        this.frequency = freq;
+    }
+    
+    start() {
+        this.timeout = setInterval(this.callback, 1000 / this.frequency);
+    }
+
+    stop() {
+        if (this.timeout) {
+            clearInterval(this.timeout);
+        }
+    }
+}
+
 class Mouse {
+    // TODO track devices by path rather than vid+pid
     constructor(vid, pid) {
         this.deviceId =  `${vid}-${pid}`;
-        let device = new HID.HID(vid, pid);
-        device.on("data", this.interpretMouseData.bind(this));
+        this.device = new HID.HID(...this.deviceId.split('-'));
         this.previousButtons = 0;
+
+        let loop = new Metronome(this.interpretMouseData.bind(this), 60);
+        loop.start();
     }
 
     interpretMouseData(data) {
-        let buttons = data[0];
-        if (buttons === undefined) return;
+        let processData = (data) => {
+            if (data === undefined) return;
+            let buttons = data[0];
 
-        if (buttons !== this.previousButtons) {
-            MouseButtonTransitionTable[`${this.previousButtons}`][`${buttons}`].map(
-                (result) => { this.emitEvent(result.type, {buttons: buttons, button: result.button}); }
-            );
+            if (buttons !== this.previousButtons) {
+                MouseButtonTransitionTable[`${this.previousButtons}`][`${buttons}`].map(
+                    (result) => { 
+                        this.emitEvent(result.type, {buttons: buttons, button: result.button}); 
+                    }
+                );
+            }
+
+            this.previousButtons = buttons;
+
+            let movedelta = [data[1], data[2]].map(x => x > 128 ? x - 256 : x);
+            if (movedelta[0] !== 0 || movedelta[1] !== 0) {
+                this.emitEvent("mousemove", { delta: movedelta }); 
+            }
         }
 
-        this.previousButtons = buttons;
-
-        let movedelta = [data[1], data[2]].map(x => x > 128 ? x - 256 : x);
-        if (movedelta[0] !== 0 || movedelta[1] !== 0) {
-            this.emitEvent("mousemove", { delta: movedelta }); 
-        }
+        processData(data);
     }
 
     emitEvent(type, data) {
+        console.log(type);
+
         if (!connection) {
             return;
         }
@@ -166,7 +198,9 @@ class Mouse {
 // Start sending events for all mice
 for (let mouse of mice) {
     let [vid, pid] = mouse.split("-");
-    console.log(vid, pid);
-    new Mouse(vid, pid);
+    if (vid !== '1452') {
+        console.log(vid, pid);
+        new Mouse(vid, pid);
+    }
 }
 

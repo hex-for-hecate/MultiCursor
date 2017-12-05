@@ -1,0 +1,24 @@
+{
+  "name": "multicursor",
+  "version": "0.1.0",
+  "description": "A service for producing input device events to the browser with additional device metadata. Its purpose is to support things like having multiple cursors attached to separate mice.",
+  "main": "./src/server.js",
+  "dependencies": {
+    "node-hid": "^0.5.7",
+    "websocket": "^1.0.24"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ptcher/MultiCursor.git"
+  },
+  "author": "Philip Tchernavskij",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ptcher/MultiCursor/issues"
+  },
+  "homepage": "https://github.com/ptcher/MultiCursor#readme"
+}
