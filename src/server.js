@@ -9,8 +9,8 @@
 // I can't distinguish between these two cases!
 // A dialog system wouldn't fix this, because I don't think I have any way of actually determining whether two devices with the same vid and pid are different, unless there's a mount point field or something :-/
 // There *may* be a serial number that will identify devices uniquely?
-// Apparently one can also get devices by path, i.e. with 'device = new HID.HID(path)'
 // Then I need to use a hash of the path as the id on the client end, rather than the vid + pid.
+// Apparently one can also get devices by path, i.e. with 'device = new HID.HID(path)'
 
 // Possible TODO: a dialogical system where the client creates sample input events to grab a specific mouse. 
 // This could be helpful in several respects: 
@@ -149,8 +149,9 @@ class Mouse {
         this.device = new HID.HID(...this.deviceId.split('-'));
         this.previousButtons = 0;
 
-        let loop = new Metronome(this.interpretMouseData.bind(this), 60);
-        loop.start();
+        this.device.on('data', this.interpretMouseData);
+        // let loop = new Metronome(this.interpretMouseData.bind(this), 60);
+        // loop.start();
     }
 
     interpretMouseData(data) {
