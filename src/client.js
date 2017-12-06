@@ -34,8 +34,8 @@ class MultiCursorEventEmitter {
         });
         ws.addEventListener("message", (msg) => {
             let data = JSON.parse(msg.data);
-            if (data.type === "devicelist") {
-                this.registerDevices(data.devicelist);
+            if (data.type === "deviceList") {
+                this.registerDevices(data.deviceList);
             } else if (data.type === "mousemove" ||
                        data.type === "mousedown" ||
                        data.type === "mouseup") {
@@ -100,7 +100,7 @@ class Mouse {
 
 const makeMice = (deviceList) => {
     console.log(`registering all mice: ${deviceList}`);
-    for (let deviceId of deviceList) {
+    for (let deviceId in deviceList) {
         let m = new Mouse(deviceId);
     }
 };
