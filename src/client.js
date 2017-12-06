@@ -100,7 +100,8 @@ class Mouse {
 
 const makeMice = (deviceList) => {
     console.log(`registering all mice: ${deviceList}`);
-    for (let deviceId in deviceList) {
+    // FIXME: it does not make sense to pass the node-hid device objects, this should simply be a list of identifiers
+    for (let deviceId of deviceList) {
         let m = new Mouse(deviceId);
     }
 };

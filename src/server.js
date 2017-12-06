@@ -76,7 +76,7 @@ socket.on("request", function(req) {
     console.log("Socket connection opened");
 
     // send all registered mice to the client
-    connection.sendUTF(JSON.stringify({ type: "deviceList", deviceList: mice }));
+    connection.sendUTF(JSON.stringify({ type: "deviceList", deviceList: Object.keys(mice) }));
 
     connection.on("message", function(msg) {
         //do we want any interaction?
