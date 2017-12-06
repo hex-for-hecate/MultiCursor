@@ -1,7 +1,8 @@
 /*jshint esversion: 6 */
 
 // Registers all plugged-in mice and sends their events through the configured web socket 
-// FIXME: make the mouse filter grab the apple trackpad.
+// FIXME: find out where to inject a strategy to handle different kinds of mice. the trackpad breaks the current assumptions about report format
+//        make the mouse filter grab the apple trackpad.
 //        and investigate why it is inconsistent about grabbing other devices.
 
 // FIXME: The same device may appear in duplicate, and 
@@ -11,20 +12,19 @@
 // There *may* be a serial number that will identify devices uniquely?
 // Then I need to use a hash of the path as the id on the client end, rather than the vid + pid.
 // Apparently one can also get devices by path, i.e. with 'device = new HID.HID(path)'
+// TODO identify devices by path
 
 // Possible TODO: a dialogical system where the client creates sample input events to grab a specific mouse. 
 // This could be helpful in several respects: 
 //   I wouldn't have to rely on the inconsistent filtering code, 
 //   I could theoretically make virtual mice that aren't strictly bound to single mice
-//   
-//
 
 // FIXME: Allow mice to be used regularly while the server is in effect
 //        It's unclear whether or not this is a bug.
 //        I've played around with using the API in different ways.
 //        This has the exact same result as using device.on(), i.e. it keeps holding on to the device.
 //        If I open and close rather than resume and pause, the processing function is called, but data is always undefined -_-
-//        TODO: Workaround it by prompting for a click by the 'developer' mouse on startup and closing that device.
+//        I have instituted a workaround: prompt for a click by the 'developer' mouse on startup and close that device.
 
 /*
 Mouse data looks like this:
@@ -44,6 +44,8 @@ Mouse data looks like this:
 const HID = require('../node_modules/node-hid');
 const server = require('websocket').server, http = require('http');
 
+const WEBSOCKET_PORT = 7777;
+
 const getAllDevices = function() {
     return HID.devices();
 };
@@ -52,22 +54,29 @@ const getAllDevices = function() {
 let allDevices = getAllDevices();
 
 // Look for everything that looks like a mouse:
-let mice = Array.from(new Set(allDevices
+let mouseIds = Array.from(new Set(allDevices
     .filter((d) => d.usagePage === 1 && d.usage === 2)
     .map((d) => `${d.vendorId}-${d.productId}`)));
+
+let mice = {};
+
+for (let mouseId of mouseIds) {
+    mice[mouseId] = new HID.HID(...mouseId.split('-'));
+}
 
 let connection;
 
 let socket = new server({
-    httpServer: http.createServer().listen(7777)
+    httpServer: http.createServer().listen(WEBSOCKET_PORT)
 });
+console.log(`Waiting for socket connection on port ${WEBSOCKET_PORT}`);
 
 socket.on("request", function(req) {
     connection = req.accept(null, req.origin);
     console.log("Socket connection opened");
 
     // send all registered mice to the client
-    connection.sendUTF(JSON.stringify({ type: "devicelist", devicelist: mice }));
+    connection.sendUTF(JSON.stringify({ type: "deviceList", deviceList: mice }));
 
     connection.on("message", function(msg) {
         //do we want any interaction?
@@ -117,44 +126,29 @@ const MouseButtonTransitionTable = {
     }
 };
 
-class Metronome {
-    constructor(callback, freq) {
-        this.callback = callback;
-        this.frequency = freq;
-    }
-
-    setCallback(callback) {
-        this.callback = callback;
-    }
-
-    setFrequency(freq) {
-        this.frequency = freq;
-    }
-    
-    start() {
-        this.timeout = setInterval(this.callback, 1000 / this.frequency);
-    }
-
-    stop() {
-        if (this.timeout) {
-            clearInterval(this.timeout);
-        }
-    }
-}
+let devMouseChosen = false;
+let developerMouse;
 
 class Mouse {
     // TODO track devices by path rather than vid+pid
-    constructor(vid, pid) {
-        this.deviceId =  `${vid}-${pid}`;
-        this.device = new HID.HID(...this.deviceId.split('-'));
+    constructor(device, id) {
+        this.device = device;
+        this.deviceId = id;
+
         this.previousButtons = 0;
 
-        this.device.on('data', this.interpretMouseData);
-        // let loop = new Metronome(this.interpretMouseData.bind(this), 60);
-        // loop.start();
+        this.device.on('data', this.interpretMouseData.bind(this));
     }
 
     interpretMouseData(data) {
+        if (!devMouseChosen) {
+            console.log(`${this.deviceId} is the developer mouse.`);
+            developerMouse = this.deviceId;
+            this.device.close();
+            devMouseChosen = true;
+            return;
+        }
+
         let processData = (data) => {
             if (data === undefined) return;
             let buttons = data[0];
@@ -196,12 +190,10 @@ class Mouse {
     }
 }
 
-// Start sending events for all mice
-for (let mouse of mice) {
-    let [vid, pid] = mouse.split("-");
-    if (vid !== '1452') {
-        console.log(vid, pid);
-        new Mouse(vid, pid);
-    }
+for (let mouseId in mice) {
+    if (mouseId === '1452-631') continue;
+    let mouse = mice[mouseId];
+    new Mouse(mouse, mouseId);
 }
 
+console.log('Click a mouse to free it.');
