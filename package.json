@@ -8,6 +8,7 @@
     "@types/node": "^8.0.31",
     "@types/websocket": "^0.0.35",
     "node-hid": "^0.5.7",
+    "usb-detection": "^1.4.2",
     "websocket": "^1.0.24"
   },
   "devDependencies": {},
