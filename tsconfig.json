@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+        "module": "commonjs",
+        "target": "es6",
+        "noImplicitAny": false,
+        "sourceMap": true,
+        "experimentalDecorators": true,
+        "outDir": "js",
+        "lib": ["es2015", "es2016", "es2017", "ES7", "DOM","DOM.Iterable"]
+  }
+}
