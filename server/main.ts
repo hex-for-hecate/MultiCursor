@@ -113,6 +113,8 @@ let mouseDataTransformer = {
 
         result['id'] = metadata.id;
 
+        result['type'] = 'mouseInput';
+
         return result;
     }
 };
