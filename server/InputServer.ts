@@ -1,3 +1,5 @@
+// TODO: Detect when devices are plugged in or out, and send corresponding messages to the client.
+
 // Possible TODO: a dialogical system where the client creates sample input events to grab a specific mouse. 
 // This could be helpful in several respects: 
 //   I wouldn't have to rely on the inconsistent filtering code, 
@@ -15,6 +17,7 @@
  * Extend the server with support for your devices and input data format in ./main.ts
  * */
 const HID = require('../node_modules/node-hid') as NodeHID;
+const usbDetect = require('../node_modules/usb-detection') as USBDetection;
 import {server} from 'websocket';
 import {createServer} from 'http';
 
@@ -49,6 +52,33 @@ interface Device {
 export interface DeviceData {
     type: string;
     data: number[];
+}
+
+interface USBDetection {
+    on: (eventName: string, callback: (device: USBDetectionDevice) => void) => void;
+        /* eventName can be:
+         *   add (also aliased as insert)
+         *   add:vid
+         *   add:vid:pid
+         *   remove
+         *   remove:vid
+         *   remove:vid:pid
+         *   change
+         *   change:vid
+         *   change:vid:pid
+         */
+    startMonitoring: () => void;
+    stopMonitoring: () => void;
+}
+
+interface USBDetectionDevice {
+	locationId: number;
+	vendorId: number;
+	productId: number;
+	deviceName: string;
+	manufacturer: string;
+	serialNumber: string;
+	deviceAddress: number;
 }
 
 export interface Recognizer {
