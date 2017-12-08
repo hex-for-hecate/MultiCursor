@@ -1,9 +1,12 @@
 // TODO: Detect when devices are plugged in or out, and send corresponding messages to the client.
+//       TODO: create a single point that manages the client messaging part of adding and removing devices,
+//             i.e. initial registration should happen by the same mechanism that continuous adding does.
 
 // Possible TODO: a dialogical system where the client creates sample input events to grab a specific mouse. 
 // This could be helpful in several respects: 
 //   I wouldn't have to rely on the inconsistent filtering code, 
 //   I could theoretically make virtual mice that aren't strictly bound to single mice
+//   This feels like it should be client-end, though.
 
 // FIXME: Allow mice to be used regularly while the server is in effect
 //        It's unclear whether or not this is a bug.
@@ -27,16 +30,16 @@ interface NodeHID {
 }
 
 export interface DeviceDescriptor {
-    vendorId: number;
-    productId: number;
-    path: string;
+    vendorId    : number;
+    productId   : number;
+    path        : string;
+    release     : number;
+    'interface' : number;
+    usagePage   : number;
+    usage       : number;
     serialNumber: string;
     manufacturer: string;
-    product: string;
-    release: number;
-    'interface': number;
-    usagePage: number;
-    usage: number;
+    product     : string;
 }
 
 interface DeviceConstructor {
@@ -45,7 +48,8 @@ interface DeviceConstructor {
 }
 
 interface Device {
-    on: (eventType: string, callback: (data: DeviceData) => void) => void;
+    // this is a bad type signature, but I'm not sure how to wrangle typescript into a better one
+    on: (eventType: 'data' | 'error', callback: (dataOrError: DeviceData | Error) => void) => void;
     close: () => void;
 }
 
@@ -72,13 +76,13 @@ interface USBDetection {
 }
 
 interface USBDetectionDevice {
-	locationId: number;
-	vendorId: number;
-	productId: number;
-	deviceName: string;
-	manufacturer: string;
-	serialNumber: string;
+	locationId   : number;
+	vendorId     : number;
+	productId    : number;
 	deviceAddress: number;
+	deviceName   : string;
+	manufacturer : string;
+	serialNumber : string;
 }
 
 export interface Recognizer {
@@ -92,26 +96,77 @@ export interface Transformer {
 };
 
 interface DeviceRecord {
-    [key: string]: {device: Device, metadata: any};
+    desc    : DeviceDescriptor;
+    device  : Device; 
+    metadata: any;
+}
+
+interface DeviceRegistry {
+    [key: string]: DeviceRecord;
+}
+
+//   FIXME: since both device finding functions match by vendorId and productId, they assume that only one such device is plugged in.
+//   I use them to bridge from USBDetectionDevice to node-hid's DeviceDescriptor
+//   It would be ideal if both libraries specified path, but even then, it doesn't have a standard format that I could match.
+//   I can't assume that I have access to serial number, as it seems to be priviledged information on unix systems.
+
+// node-hid can't always find a device right after it is plugged in.
+// I think sleep reduces the chance of that error occurring.
+// do nothing for napTime milliseconds
+const sleep = function(napTime: number) {
+    let start = Date.now();
+    while (true) {
+        if (Date.now() - start >= napTime) {
+            return;
+        }
+    }
+}
+
+interface InputServerConfig {
+    clientURL    : number;
+    transformers : Transformer[];
+    recognizers  : Recognizer[];
+    [key: string]: any; // this is for any additional values one wants to store in the InputServer, e.g. flags for various cross-device state
 }
 
 export class InputServer {
-    clientURL: number;
+    clientURL   : number;
     transformers: Transformer[];
-    recognizers: Recognizer[];
-    devices: DeviceRecord = {};
-    connection: any; // @types/websocket does not export the connection type, but I would like to track it across methods :-/
+    recognizers : Recognizer[];
+    devices     : DeviceRegistry = {};
+    connection  : any; // @types/websocket does not export the connection type, but I would like to track it across methods :-/
 
-    constructor(config: {
-        clientURL: number,
-        transformers: Transformer[],
-        recognizers: Recognizer[]
-    }) {
-        this.clientURL = config.clientURL;
-        this.transformers = config.transformers;
-        this.recognizers = config.recognizers;
+    constructor(config: InputServerConfig) {
+        for (let key in config) {
+            this[key] = config[key];
+        }
 
         this.registerDevices();
+
+        usbDetect.startMonitoring();
+        usbDetect.on('add', this.addDevice.bind(this));
+        usbDetect.on('remove', this.removeDevice.bind(this));
+    }
+
+    // look for a device that's plugged in but not registered with the InputServer
+    findUnregisteredDevice(vendorId: number, productId: number): DeviceDescriptor {
+        for (let desc of HID.devices()) {
+            if (desc.vendorId === vendorId && desc.productId === productId) {
+                return desc;
+            }
+        }
+        throw new Error(`Cannot find unregistered device with vendorId ${vendorId} and productId ${productId}`);
+    }
+
+    // look for a device registered with the InputServer
+    findRegisteredDevice(vendorId: number, productId: number): DeviceRecord {
+        for (let id in this.devices) {
+            let record = this.devices[id];
+            if (record.desc.vendorId === vendorId && record.desc.productId === productId) {
+                return record;
+            }
+        }
+        throw new Error(`Cannot find registered device with vendorId ${vendorId} and productId ${productId}`);
     }
 
     // fill up this.devices
@@ -119,29 +174,43 @@ export class InputServer {
         let allDeviceDescriptors = HID.devices();
 
         for (let desc of allDeviceDescriptors) {
-            // apply recognizers in order
-            for (let rec of this.recognizers) {
-                if (rec.recognize(desc)) {
-                    let device = new HID.HID(desc.path);
-                    let metadata = rec.register(desc);
-                    let id = metadata.id;
-                    this.devices[id] = {
-                        device: device,
-                        metadata: metadata
-                    };
+            this.registerDevice(desc);
+        }
+    }
 
-                    let sendAndTransform = function(data: DeviceData) {
-                        let transform = this.getTransformer(metadata);
-                        let transformed = transform(data, metadata);
-                        if (transformed) {
-                            this.sendToClient(transformed);
-                        }
+    registerDevice(desc) {
+        // apply recognizers in order
+        for (let rec of this.recognizers) {
+            if (rec.recognize(desc)) {
+                let device = new HID.HID(desc.path);
+                let metadata = rec.register(desc);
+                let id = metadata.id;
+                this.devices[id] = {
+                    desc    : desc,
+                    device  : device,
+                    metadata: metadata
+                };
+
+                let sendAndTransform = function(data: DeviceData) {
+                    let transform = this.getTransformer(metadata);
+                    let transformed = transform(data, metadata);
+                    if (transformed) {
+                        this.sendToClient(transformed);
                     }
-
-                    device.on('data', sendAndTransform.bind(this));
-
-                    break;
                 }
+
+                let handleError = function(err: Error) {
+                    /* throw out the device? 
+                     * Interesting situation: an error will be provoked on plugout, but removeDevice is called
+                     * TODO: Figure out if anything should be done here.
+                     * */
+                    console.log('Not handling error');
+                }
+
+                device.on('data', sendAndTransform.bind(this));
+                device.on('error', handleError);
+
+                return;
             }
         }
     }
@@ -154,6 +223,27 @@ export class InputServer {
         }
 
         throw new Error(`No transformer found for device with metadata ${JSON.stringify(metadata)}`);
+    }
+
+    // method called when a device is plugged in while the InputServer is operating
+    addDevice(usbDevice: USBDetectionDevice) {
+        console.log('Device plugged in');
+
+        let [vid, pid] = [usbDevice.vendorId, usbDevice.productId];
+        sleep(100);
+        let desc = this.findUnregisteredDevice(vid, pid);
+        this.registerDevice(desc);
+    }
+
+    // method called when a device is removed while the InputServer is operating
+    removeDevice(usbDevice: USBDetectionDevice) {
+        console.log('Device removed');
+
+        let [vid, pid] = [usbDevice.vendorId, usbDevice.productId];
+        let record = this.findRegisteredDevice(vid, pid);
+        let id = record.metadata.id;
+        this.devices[id].device.close();
+        delete this.devices[id];
     }
 
     connect() {
