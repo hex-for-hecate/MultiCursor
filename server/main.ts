@@ -4,13 +4,15 @@ const WEBSOCKET_PORT = 7777;
 
 let mouseRecognizer = {
     recognize: function(desc: DeviceDescriptor) {
+        if (desc.usagePage === 1 && desc.usage === 2) {
+            console.log(`Recognized device with vendorId:productId ${desc.vendorId}:${desc.productId}`);
+        }
         return desc.usagePage === 1 && desc.usage === 2;
     },
     register: function(desc: DeviceDescriptor) {
         return {
             type: 'mouse',
             id: desc.path,
-            developerMouseChosen: false
         }
     }
 };
@@ -64,6 +66,7 @@ const MouseButtonTransitionTable = {
     }
 };
 
+// maps mouse button codes to the states of the left, middle, and right buttons
 const buttonMap = {
     0: [false, false, false],
     1: [true, false, false],
@@ -79,20 +82,14 @@ let mouseDataTransformer = {
         return metadata.type === 'mouse';
     },
     transform: function(data: DeviceData, metadata: any) {
-        if (!metadata.developerMouseChosen && data[0] > 0) {
+        if (!this.developerMouseChosen && data[0] > 0) {
             console.log(`${metadata.id} is the developer mouse.`);
 
             // close the developer mouse and stop tracking it
             this.devices[metadata.id].device.close();
             delete this.devices[metadata.id];
 
-            // update all mice to indicate that the developer mouse has been chosen
-            for (let id in this.devices) {
-                let metadata = this.devices[id].metadata;
-                if (metadata.type === 'mouse') {
-                    metadata.developerMouseChosen = true;
-                }
-            }
+            this.developerMouseChosen = true;
 
             // do not send this result
             return false;
@@ -125,7 +122,8 @@ let mouseDataTransformer = {
 let inputServer = new InputServer({
     clientURL: WEBSOCKET_PORT,
     recognizers: [mouseRecognizer],
-    transformers: [mouseDataTransformer]
+    transformers: [mouseDataTransformer],
+    developerMouseChosen: false
 });
 
 inputServer.connect();
