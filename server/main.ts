@@ -2,6 +2,11 @@ import {InputServer, DeviceDescriptor, DeviceData} from './InputServer';
 
 const WEBSOCKET_PORT = 7777;
 
+const generateDeviceId = function(desc: DeviceDescriptor) {
+    //return desc.path.split(' ').join('');
+    return `device-${desc.vendorId}-${desc.productId}`;
+}
+
 let mouseRecognizer = {
     recognize: function(desc: DeviceDescriptor) {
         if (desc.usagePage === 1 && desc.usage === 2) {
@@ -12,7 +17,7 @@ let mouseRecognizer = {
     register: function(desc: DeviceDescriptor) {
         return {
             type: 'mouse',
-            id: desc.path,
+            id: generateDeviceId(desc),
         }
     }
 };
