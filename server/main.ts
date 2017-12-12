@@ -113,9 +113,9 @@ let mouseDataTransformer = {
 
         result['scroll'] = data[3];
 
-        result['id'] = metadata.id;
+        result['metadata'] = metadata;
 
-        result['type'] = 'mouseInput';
+        result['type'] = 'input';
 
         return result;
     }
