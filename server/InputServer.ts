@@ -184,7 +184,7 @@ export class InputServer {
                     metadata: metadata
                 };
 
-                let sendAndTransform = function(data: DeviceData) {
+                let transformAndSend = function(data: DeviceData) {
                     let transform = this.getTransformer(metadata);
                     let transformed = transform(data, metadata);
                     if (transformed) {
@@ -199,7 +199,7 @@ export class InputServer {
                     console.log('Not handling error');
                 }
 
-                device.on('data', sendAndTransform.bind(this));
+                device.on('data', transformAndSend.bind(this));
                 device.on('error', handleError);
 
                 if (!this.connection) {
@@ -207,10 +207,32 @@ export class InputServer {
                 } else {
                     this.connection.sendUTF(JSON.stringify({ 
                         type: 'addDevice', 
-                        device: metadata 
+                        device: {
+                            type: metadata.clientType,
+                            id: metadata.id
+                        }
                     }));
                 }
             }
+        }
+    }
+
+    unregisterDevice(id) {
+        //TODO this is to be called from removeDevice and from the routine that chooses the devleloper mosue
+        
+        this.devices[id].device.close();
+        delete this.devices[id];
+
+        if (!this.connection) {
+            return;
+        } else {
+            // for removal, the client side only needs the id, since it is expected to maintain all the other metadata by association with the id
+            this.connection.sendUTF(JSON.stringify({ 
+                type: 'removeDevice', 
+                device: {
+                    id: id
+                }
+            }));
         }
     }
 
@@ -241,17 +263,7 @@ export class InputServer {
         let [vid, pid] = [usbDevice.vendorId, usbDevice.productId];
         let record = this.findRegisteredDevice(vid, pid);
         let id = record.metadata.id;
-        this.devices[id].device.close();
-        delete this.devices[id];
-
-        if (!this.connection) {
-            return;
-        } else {
-            this.connection.sendUTF(JSON.stringify({ 
-                type: 'removeDevice', 
-                device: record.metadata 
-            }));
-        }
+        this.unregisterDevice(id);
     }
 
     connect() {
