@@ -278,7 +278,10 @@ export class InputServer {
             self.connection = req.accept(null, req.origin);
             console.log('Socket connection opened');
 
-            let deviceMetadata = Object.keys(self.devices).map((key) => self.devices[key].metadata);
+            let deviceMetadata = Object.keys(self.devices).map((key) => ({
+                id: self.devices[key].metadata.id,
+                type: self.devices[key].metadata.clientType
+            }));
             self.connection.sendUTF(JSON.stringify({ 
                 type: 'addDevices', 
                 deviceList: deviceMetadata 
