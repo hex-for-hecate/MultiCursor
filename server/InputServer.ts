@@ -1,24 +1,22 @@
-// TODO: Detect when devices are plugged in or out, and send corresponding messages to the client.
-//       TODO: create a single point that manages the client messaging part of adding and removing devices,
-//             i.e. initial registration should happen by the same mechanism that continuous adding does.
-
-// Possible TODO: a dialogical system where the client creates sample input events to grab a specific mouse. 
-// This could be helpful in several respects: 
-//   I wouldn't have to rely on the inconsistent filtering code, 
-//   I could theoretically make virtual mice that aren't strictly bound to single mice
-//   This feels like it should be client-end, though.
-
-// FIXME: Allow mice to be used regularly while the server is in effect
-//        It's unclear whether or not this is a bug.
-//        I've played around with using the API in different ways.
-//        This has the exact same result as using device.on(), i.e. it keeps holding on to the device.
-//        If I open and close rather than resume and pause, the processing function is called, but data is always undefined -_-
-//        I have instituted a workaround: prompt for a click by the 'developer' mouse on startup and close that device.
-
-/* FRAMEWORK PART
+/* 
  * Manages recognizing and registering devices, and sending their data to the client.
  * Extend the server with support for your devices and input data format in ./main.ts
  * */
+
+/*
+ * FIXME: Allow mice to be used regularly while the server is in effect
+ *        It's unclear whether or not this is a bug.
+ *        On Michel's suggestion, I have instituted a workaround: prompt for a click by the 'developer' mouse on startup and close that device.
+ *
+ * TODO Work out the right way to create device identifiers.
+ * Since the association between an id and a device is stored in the callbacks attached to each device, I strictly speaking don't have to make it a hash of the path. Making it a hash of path should make the same device plugged into the same (series of) port(s) get the same id consistently, but what would be really useful would be to be able to recognize devices uniquely regardless of how where they are plugged in, i.e., to be able to move a mouse between computers and maintain some specialized behavior. 
+ * To be fair, using vid and pid _does_ uniquely identify the product, if not the specific device.
+ * That would probably be better in most operating circumstances.
+ * Is there some way to make path be the distinguishing factor in case of a vid+pid overlap?
+ *
+ * FIXME One of the side effects of not being able to distinguish between two devices with the same vid-pid pair is that I lose the ability to unambiguously bridge from a device descriptor given by usb-detection to one given by node-hid in that specific case.
+ */
+
 const HID = require('../node_modules/node-hid') as NodeHID;
 const usbDetect = require('../node_modules/usb-detection') as USBDetection;
 import {server} from 'websocket';
@@ -104,11 +102,6 @@ interface DeviceRecord {
 interface DeviceRegistry {
     [key: string]: DeviceRecord;
 }
-
-//   FIXME: since both device finding functions match by vendorId and productId, they assume that only one such device is plugged in.
-//   I use them to bridge from USBDetectionDevice to node-hid's DeviceDescriptor
-//   It would be ideal if both libraries specified path, but even then, it doesn't have a standard format that I could match.
-//   I can't assume that I have access to serial number, as it seems to be priviledged information on unix systems.
 
 // node-hid can't always find a device right after it is plugged in.
 // I think sleep reduces the chance of that error occurring.
@@ -200,8 +193,7 @@ export class InputServer {
                 }
 
                 let handleError = function(err: Error) {
-                    /* throw out the device? 
-                     * Interesting situation: an error will be provoked on plugout, but removeDevice is called
+                    /*
                      * TODO: Figure out if anything should be done here.
                      * */
                     console.log('Not handling error');
@@ -210,7 +202,14 @@ export class InputServer {
                 device.on('data', sendAndTransform.bind(this));
                 device.on('error', handleError);
 
-                return;
+                if (!this.connection) {
+                    return;
+                } else {
+                    this.connection.sendUTF(JSON.stringify({ 
+                        type: 'addDevice', 
+                        device: metadata 
+                    }));
+                }
             }
         }
     }
@@ -244,27 +243,41 @@ export class InputServer {
         let id = record.metadata.id;
         this.devices[id].device.close();
         delete this.devices[id];
+
+        if (!this.connection) {
+            return;
+        } else {
+            this.connection.sendUTF(JSON.stringify({ 
+                type: 'removeDevice', 
+                device: record.metadata 
+            }));
+        }
     }
 
     connect() {
+        let self = this;
+
         let socket = new server({
-            httpServer: createServer().listen(this.clientURL)
+            httpServer: createServer().listen(self.clientURL)
         });
-        console.log(`Waiting for socket connection on port ${this.clientURL}`);
+        console.log(`Waiting for socket connection on port ${self.clientURL}`);
 
         socket.on('request', function(req) {
-            this.connection = req.accept(null, req.origin);
+            self.connection = req.accept(null, req.origin);
             console.log('Socket connection opened');
 
-            let deviceIds = Object.keys(this.devices);
-            this.connection.sendUTF(JSON.stringify({ type: 'deviceList', deviceList: deviceIds }));
+            let deviceMetadata = Object.keys(self.devices).map((key) => self.devices[key].metadata);
+            self.connection.sendUTF(JSON.stringify({ 
+                type: 'addDevices', 
+                deviceList: deviceMetadata 
+            }));
 
             /*
             connection.on('message', function(msg) {
             });
             */
 
-            this.connection.on('close', function(connection) {
+            self.connection.on('close', function(connection) {
                 console.log('Socket connection closed');
             });
         });
