@@ -31,9 +31,6 @@ let mouseRecognizer = {
 
 let trackballRecognizer = {
     recognize: function(desc: DeviceDescriptor) {
-        if (desc.usagePage === 1 && desc.usage === 2) {
-            console.log(`Looking at ${desc.vendorId}:${desc.productId}`);
-        }
         let matched = desc.vendorId === 1149 && desc.productId === 4099;
         if (matched) {
             console.log(`Recognized Kensington Trackball.`);
